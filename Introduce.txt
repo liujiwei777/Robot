@@ -1,0 +1,26 @@
+第一步：tcpdump -i ens3 src port 63776 -w /home/ubuntu/tcpdump/sso.pcap
+        tcpdump -i ens3 src port 7784 -w /home/ubuntu/tcpdump/monsters.pcap
+		tcpdump -i ens3 src port 63729 -w /home/ubuntu/tcpdump/pay.pcap
+		tcpdump -i ens3 src port 7799 -w /home/ubuntu/tcpdump/other.pcap
+		tcpdump -i ens3 src port 63564 -w /home/ubuntu/tcpdump/log.pcap
+		tcpdump -i ens3 src port 80 -w /home/ubuntu/tcpdump/cdn.pcap
+		
+第二步：scp -r ubuntu@52.25.180.239:/home/ubuntu/tcpdump /home/tcpflow/tcpdump
+
+		
+第三步：tcpflow -r /home/tcpflow/tcpdump/sso.pcap
+		tcpflow -r /home/tcpflow/tcpdump/monsters.pcap
+		tcpflow -r /home/tcpflow/tcpdump/pay.pcap
+		tcpflow -r /home/tcpflow/tcpdump/other.pcap
+		tcpflow -r /home/tcpflow/tcpdump/log.pcap
+		tcpflow -r /home/tcpflow/tcpdump/cdn.pcap
+	
+第四布：rm -rf /home/tcpflow/tcpdump
+
+第五步：tar cvzf /home/Message.zip /home/liujiwei
+
+第六步：配置config.txt的FilePath字段，配置ip.txt的IP地址和端口
+FilePath:要发送zip的路径
+ConnectCount:线程个数
+
+第七步：启动Robot发送数据
