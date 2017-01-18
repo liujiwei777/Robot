@@ -1,0 +1,19 @@
+POST /monsters/ HTTP/1.1
+Accept-Encoding: identity
+User-Agent: ANDROID#C60#KFFOWI#stock#3.10.54+#0##1.1.3#en_US
+Authorization: Token wmMCAAAAAACyLIRYAAAAAAABAgMEBQYHCAkKCwwNDg8=
+Host: monsters.cliapi.microfun.com.:7784
+Connection: Keep-Alive
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 53
+
+ 2740950352be9177c45cc9819fdd1bc6ƒBIAction–Ë”÷ö≤VPOST /monsters/ HTTP/1.1
+Accept-Encoding: identity
+User-Agent: ANDROID#C60#KFFOWI#stock#3.10.54+#0##1.1.3#en_US
+Authorization: Token wmMCAAAAAADKLIRYAAAAAAABAgMEBQYHCAkKCwwNDg8=
+Host: monsters.cliapi.microfun.com.:7784
+Connection: Keep-Alive
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 53
+
+ 2740950352be9177c45cc9819fdd1bc6≈BIActionêN®˙÷ö≤V

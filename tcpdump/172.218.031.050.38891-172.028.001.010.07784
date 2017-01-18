@@ -1,0 +1,10 @@
+POST /monsters/ HTTP/1.1
+Accept-Encoding: identity
+User-Agent: ANDROID#C60#SM-T113#stock#3.10.17-962170#0##1.1.3#en_CA
+Authorization: Token M0sBAAAAAADGLIRYAAAAAAABAgMEBQYHCAkKCwwNDg8=
+Host: monsters.cliapi.microfun.com.:7784
+Connection: Keep-Alive
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 53
+
+ 2740950352be9177c45cc9819fdd1bc6ÑBIAction°mÞ¹òŒ²V
