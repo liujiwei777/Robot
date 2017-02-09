@@ -8,9 +8,12 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <cstdlib>
+#include <dirent.h>
+#include <sys/stat.h>
 #include "Buff_Manager.h"
 #include "Config.h"
 #include "Socket.h"
+#include "Log.h"
 
 
 
@@ -19,7 +22,7 @@ using namespace std;
 string strConnectCount = Config::GetInstance()->GetValue("ConnectCount");
 int MAX_CONNECT_COUNT = std::atoi(strConnectCount.c_str());
 
-//#define MAX_CONNECT_COUNT 256 
+//#define MAX_CONNECT_COUNT 256
 
 static int zip_count = 0;
 static int send_count = 0;
@@ -32,6 +35,7 @@ void *threadzipreader(void *vargp);
 void Revere_String(char* pszString, int nCount);
 Buff_Manager* Create_Buff_Manager();
 Buff_Manager* g_buff_manaer;
+void List_Dir(char *path);
 
 typedef map<int, Socket*> SOCKET_MAP;
 SOCKET_MAP socket_map;
@@ -89,9 +93,10 @@ void Socket::Connect(char* pszIP, int nPort)
 	serveraddr.sin_family = AF_INET;
 	serveraddr.sin_port = htons(nPort);
 	serveraddr.sin_addr.s_addr = inet_addr(pszIP);
-	if (connect(*m_pSocket, (struct sockaddr *)&serveraddr, sizeof(serveraddr)) < 0)
+	int nReturnValue = 0;
+	if (nReturnValue = connect(*m_pSocket, (struct sockaddr *)&serveraddr, sizeof(serveraddr)) < 0)
 	{
-		printf("connect error pszIP = %s \n", pszIP);
+		printf("connect to %s faild, error id is %d\n", pszIP, nReturnValue);
 		exit(1);
 	}
 	//      printf("connect success ip=%s port=%d, m_pSocket=%d\n", pszIP, nPort, *m_pSocket);
@@ -117,9 +122,12 @@ int Socket::Send()
 			printf("end time is %s\n", ctime(&timep));
 			g_zip_read_ok = 0;
 		}
+
+		delete buff;
+
 		return 0;
 	}
-	
+
 
 	// Send Buff
 	if (NULL != buff)
@@ -127,7 +135,7 @@ int Socket::Send()
 		int nLen = buff->Get_Len();
 		char* pszBuff = buff->Get_Buff();
 		int nSendCount = 0;
-		while ( nSendCount <= nLen )
+		while (nSendCount < nLen)
 		{
 			int nSend = send(*m_pSocket, pszBuff + nSendCount, nLen - nSendCount, 0);
 			if (-1 == nSend)
@@ -135,11 +143,13 @@ int Socket::Send()
 				printf("Send strerror:%s\n", strerror(errno));
 				m_send_buff_index = -1;
 				buff->Clean();
+				delete buff;
 				return 0;
 			}
 			nSendCount += nSend;
 		}
-		
+		delete buff;
+		cout << "Send Count = " << nSendCount << endl;
 		return nSendCount;
 	}
 
@@ -149,14 +159,16 @@ int Socket::Send()
 int Socket::Recv()
 {
 	char buff[2048 * 10] = "\0";
-	int nRecv = recv(*m_pSocket, buff, 2048 * 10, 0);
+	string strBuff;
+	int nRecv = recv(*m_pSocket, const_cast<char*>(strBuff.c_str()), 2048 * 10, 0);
 	if (nRecv <= 0 && (errno == EAGAIN || errno == EWOULDBLOCK))
 	{
 		printf("Recv strerror:%s\n", strerror(errno));
 		return 0;
 	}
 	if (nRecv > 0)
-        printf("%s\n", buff);
+	   printf("%s\n", buff);
+	Log::GetInstance()->Insert(strBuff);
 	return 0;
 }
 
@@ -232,10 +244,6 @@ int main()
 {
 	Socket sock[MAX_CONNECT_COUNT];
 
-	// record start time
-	time_t timep;
-	time(&timep);
-	printf("start time is %s\n", ctime(&timep));
 	// Create Buff
 	g_buff_manaer = Create_Buff_Manager();
 	// Create and Init Configure
@@ -259,7 +267,7 @@ int main()
 	pthread_t zipreader;
 	pthread_create(&zipreader, NULL, threadzipreader, NULL);
 	pthread_detach(zipreader);
-	sleep(10);
+	sleep(2);
 
 	// Create and Init socket
 	for (int i = 0; i < MAX_CONNECT_COUNT; i++)
@@ -269,6 +277,11 @@ int main()
 		sock[i].Set_Buff_Manager(g_buff_manaer);
 		socket_map.insert(SOCKET_MAP::value_type(*sock[i].Get_Socket(), &sock[i]));
 	}
+
+	// record start time
+	time_t timep;
+	time(&timep);
+	printf("start time is %s\n", ctime(&timep));
 
 	// start thread
 	pthread_t tid1[MAX_CONNECT_COUNT];
@@ -288,7 +301,7 @@ int main()
 		}
 	}
 
-	sleep(3600);
+	sleep(360000);
 
 	printf(" Every thing is OK!!!\n");
 
@@ -327,44 +340,54 @@ void *threadrecv(void *vargp)
 void *threadzipreader(void *vargp)
 {
 	// init file
-	FILE* fp;
+	//FILE* fp;
+	//string strPath = Config::GetInstance()->GetValue("FilePath");
+	//fp = fopen(strPath.c_str(), "r");
+	//if (NULL == fp)
+	//{
+	//      printf("Zip File Not Exist!!!\n");
+	//      exit(1);
+	//}
+
+	//// read file
+	//ZipLocalFileHeader hdr;
+
+	//for (;;)
+	//{
+	//      // read file
+	//      fread(&hdr, sizeof(hdr), 1, fp);
+	//      if (hdr.m_u32Sig != 0x04034b50)
+	//      {// 0x04034b50 is the end
+	//              cout << "Zip Have Total UnZip!!!" << endl;
+	//              g_zip_read_ok = 1;
+	//              break;
+	//      }
+	//      int buff_len = hdr.m_u32ComprSize + hdr.m_u16FileNameLen + hdr.m_u16ExtraFieldLen;
+	//      char *send_buff = new char[buff_len + 1];
+	//      fread(send_buff, hdr.m_u32ComprSize + hdr.m_u16FileNameLen + hdr.m_u16ExtraFieldLen, 1, fp);
+	//      char *extraField = send_buff + hdr.m_u16FileNameLen + 4;
+	//      char *httpBody = send_buff + hdr.m_u16FileNameLen + hdr.m_u16ExtraFieldLen;
+	//      Revere_String(httpBody, hdr.m_u32ComprSize);
+	//
+	//      // write to buff
+	//      int nIndex = g_buff_manaer->Write_Empty_Buff(extraField, hdr.m_u16ExtraFieldLen + hdr.m_u32ComprSize - 4);
+	//      if (nIndex == MAX_BUFF_COUNT)
+	//      {// have buff to send message
+	//              delete[] send_buff;
+	//              sleep(1);
+	//              printf(" BUFF IS FULL !!!!!!!!\n");
+	//      }
+	//      delete[] send_buff;
+	//}
+
+	//fclose(fp);
+
 	string strPath = Config::GetInstance()->GetValue("FilePath");
-	fp = fopen(strPath.c_str(), "r");
-	if (fp == NULL)
+	char* pszPaht = const_cast<char*>(strPath.c_str());
+	while (true)
 	{
-		printf("error!!!");
-		exit(1);
+		List_Dir(pszPaht);
 	}
-
-	// read file
-	ZipLocalFileHeader hdr;
-
-	for (;;)
-	{
-		// read file
-		char send_buff[2048 * 10] = "\0";
-		fread(&hdr, sizeof(hdr), 1, fp);
-		if (hdr.m_u32Sig != 0x04034b50)
-		{// 0x04034b50 is the end 
-			g_zip_read_ok = 1;
-			break;
-		}
-		fread(send_buff, hdr.m_u32ComprSize + hdr.m_u16FileNameLen + hdr.m_u16ExtraFieldLen, 1, fp);
-		char *extraField = send_buff + hdr.m_u16FileNameLen + 4;
-		char *httpBody = send_buff + hdr.m_u16FileNameLen + hdr.m_u16ExtraFieldLen;
-		Revere_String(httpBody, hdr.m_u32ComprSize);
-		
-
-		// write to buff
-		int nIndex = g_buff_manaer->Write_Empty_Buff(extraField, hdr.m_u16ExtraFieldLen + hdr.m_u32ComprSize - 4);
-		if (nIndex == MAX_BUFF_COUNT)
-		{// have buff to send message
-			sleep(1);
-			printf(" BUFF IS FULL !!!!!!!!\n");
-		}
-	}
-
-	fclose(fp);
 }
 
 void Revere_String(char* pszString, int nCount)
@@ -381,5 +404,46 @@ Buff_Manager* Create_Buff_Manager()
 	return buff;
 }
 
-#pragma pack(pop)
+void List_Dir(char *path)
+{
+	DIR              *pDir;
+	struct dirent    *ent;
+	int               i = 0;
+	char              childpath[512];
 
+	pDir = opendir(path);
+	memset(childpath, 0, sizeof(childpath));
+
+	while ((ent = readdir(pDir)) != NULL)
+	{
+		if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0)
+			continue;
+
+		if (ent->d_type & DT_DIR)
+		{
+			sprintf(childpath, "%s/%s", path, ent->d_name);
+
+			List_Dir(childpath);
+		}
+		else
+		{
+			//cout << ent->d_name << endl;
+			std::string strPath(path);
+			strPath += "/";
+			strPath.append(ent->d_name);
+			std::ifstream t(strPath.c_str());
+			std::string str1((std::istreambuf_iterator<char>(t)),
+				std::istreambuf_iterator<char>());
+			if (0 == str1.size())
+			{
+				cout << "This is an Empty File !!!" << endl;
+				exit(0);
+			}
+			char* pszTemp = const_cast<char*>(str1.c_str());
+			g_buff_manaer->Write_Empty_Buff(pszTemp, str1.size());
+		}
+	}
+
+}
+
+#pragma pack(pop)
