@@ -123,7 +123,7 @@ Config* Config::GetInstance()
 	if (instance == NULL)
 	{
 		instance = new Config();
-		instance->ReadConfig("config.txt");
+		instance->ReadConfig("/home/liujiwei/robot/config.txt");
 	}
 
 	return instance;

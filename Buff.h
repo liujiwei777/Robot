@@ -34,7 +34,7 @@ public:
 	MyLock & Get_My_Lock();
 private:
 	bool  m_bSending;
-	char  m_pszBuff[MAX_BUFF_SIZE];
+	char*  m_pszBuff;
 	int   m_nCurrent;
 	int   m_nLen;
 	MyLock m_thread_lock;

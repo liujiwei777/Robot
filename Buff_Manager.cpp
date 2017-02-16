@@ -49,17 +49,17 @@ int Buff_Manager::Get_UnUse_Buff()
 	return MAX_BUFF_COUNT;
 }
 
-int Buff_Manager::Write_Empty_Buff(char *pszBuff, int nLen)
+int Buff_Manager::Write_Empty_Buff(char *pszBuff, int nWriteLen)
 {
 	for (int i = m_zip_index; i < MAX_BUFF_COUNT; i++)
 	{
 		bool bSending = false;
 		m_buff[i].Get_My_Lock().Lock();
-		int nLen = m_buff[i].Get_Len();
+		int nBuffLen = m_buff[i].Get_Len();
 		m_buff[i].Get_Sending(bSending);
-		if (0 == nLen && false == bSending)
+		if (0 == nBuffLen && false == bSending)
 		{
-			m_buff[i].Init_Char(pszBuff, nLen);
+			m_buff[i].Init_Char(pszBuff, nWriteLen);
 			m_buff[i].Get_My_Lock().Unlock();
 			return i;
 		}

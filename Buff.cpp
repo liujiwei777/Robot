@@ -5,7 +5,10 @@
 
 Buff::Buff()
 {
-	Clean();
+	m_nCurrent = 0;
+	m_nLen = 0;
+	m_bSending = false;
+	m_pszBuff = NULL;
 }
 
 void Buff::Clean()
@@ -13,11 +16,15 @@ void Buff::Clean()
 	m_nCurrent = 0;
 	m_nLen = 0;
 	m_bSending = false;
+	if ( NULL != m_pszBuff )
+		delete[] m_pszBuff;
+	
+	m_pszBuff = NULL;
 }
 
 Buff::~Buff()
 {
-
+	
 }
 
 void Buff::Set_Sending(bool bSending)
@@ -67,10 +74,16 @@ char* Buff::Get_Buff()
 
 void Buff::Init_Char(char* pszChar, int nLen)
 {
-	for (int i = 0; i < nLen; i++)
+	m_pszBuff = new char[nLen];
+	if ( NULL == m_pszBuff )
+	{
+		cout << "Memory have No Space!!!" << endl;
+	}
+	for (size_t i = 0; i < nLen; i++)
 	{
 		m_pszBuff[i] = pszChar[i];
 	}
+	//memcpy(m_pszBuff, pszChar, nLen);
 	m_nLen = nLen;
 }
 

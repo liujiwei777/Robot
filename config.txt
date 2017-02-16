@@ -1,3 +1,3 @@
-FilePath=/home/liujiwei/project/tcpflow/Mesaage.zip
-ConnectCount=6
+FilePath=/home/liujiwei/sso
+ConnectCount=1
 

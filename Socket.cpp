@@ -10,6 +10,8 @@
 #include <cstdlib>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include "Buff_Manager.h"
 #include "Config.h"
 #include "Socket.h"
@@ -29,7 +31,6 @@ static int send_count = 0;
 static int g_zip_read_ok = 0;
 
 void *WaitPacket(void *vargp);
-void *threadrecv(void *vargp);
 void *threadzipreader(void *vargp);
 
 void Revere_String(char* pszString, int nCount);
@@ -84,6 +85,9 @@ void Socket::Create(int id)
 	m_pSocket = (int *)malloc(sizeof(int));
 
 	*m_pSocket = socket(AF_INET, SOCK_STREAM, 0);
+
+	int flags = fcntl(*m_pSocket, F_GETFL, 0);
+	fcntl(*m_pSocket, F_SETFL, flags | O_NONBLOCK);
 }
 
 void Socket::Connect(char* pszIP, int nPort)
@@ -96,8 +100,19 @@ void Socket::Connect(char* pszIP, int nPort)
 	int nReturnValue = 0;
 	if (nReturnValue = connect(*m_pSocket, (struct sockaddr *)&serveraddr, sizeof(serveraddr)) < 0)
 	{
-		printf("connect to %s faild, error id is %d\n", pszIP, nReturnValue);
-		exit(1);
+		/*printf("connect to %s faild\n", pszIP);
+		printf("connect strerror:%s\n", strerror(errno));
+		exit(1);*/
+		while (nReturnValue < 0) {
+			if (errno == EINPROGRESS) {
+				break;
+			}
+			else {
+				perror("connect remote server fail.\n");
+				printf("%d\n", errno);
+				exit(0);
+			}
+		}
 	}
 	//      printf("connect success ip=%s port=%d, m_pSocket=%d\n", pszIP, nPort, *m_pSocket);
 }
@@ -138,6 +153,11 @@ int Socket::Send()
 		while (nSendCount < nLen)
 		{
 			int nSend = send(*m_pSocket, pszBuff + nSendCount, nLen - nSendCount, 0);
+			if (0 == nSend)
+			{
+				cout << "nSend == 0" << endl;
+				exit(0);
+			}
 			if (-1 == nSend)
 			{
 				printf("Send strerror:%s\n", strerror(errno));
@@ -149,7 +169,16 @@ int Socket::Send()
 			nSendCount += nSend;
 		}
 		delete buff;
-		cout << "Send Count = " << nSendCount << endl;
+		send_count += 1;
+		cout << "send_count = " << send_count << endl;
+		/*              if (20000==send_count)
+		{
+		time_t timep;
+		time(&timep);
+		printf("end time is %s\n", ctime(&timep));
+		exit(0);
+		}*/
+		//cout << "Send Count = " << send_count << endl;
 		return nSendCount;
 	}
 
@@ -158,17 +187,26 @@ int Socket::Send()
 
 int Socket::Recv()
 {
-	char buff[2048 * 10] = "\0";
-	string strBuff;
-	int nRecv = recv(*m_pSocket, const_cast<char*>(strBuff.c_str()), 2048 * 10, 0);
-	if (nRecv <= 0 && (errno == EAGAIN || errno == EWOULDBLOCK))
+	char pszBuff[4096] = "\0";
+	int nRecv = recv(*m_pSocket, pszBuff, 4096, 0);
+//	cout << "nRecv = " << nRecv << endl;
+	if (nRecv <= 0 /*&& (errno == EAGAIN || errno == EWOULDBLOCK)*/)
 	{
 		printf("Recv strerror:%s\n", strerror(errno));
+		exit(0);
 		return 0;
 	}
-	if (nRecv > 0)
-	   printf("%s\n", buff);
-	Log::GetInstance()->Insert(strBuff);
+	/*if (nRecv > 0)
+	printf("%s\n", pszBuff);
+	char* pszBody = strstr(pszBuff, "\r\n\r\n");
+	if ( NULL == pszBody )
+	{
+	exit(0);
+	return 0;
+	}
+	pszBody += 4;
+
+	Log::GetInstance()->Insert(pszBody);*/
 	return 0;
 }
 
@@ -193,7 +231,7 @@ bool Socket::Select()
 	FD_SET(*m_pSocket, &m_ExceptFD);
 
 	timeval Timeout;
-	Timeout.tv_sec = 0;
+	Timeout.tv_sec = 6;
 	Timeout.tv_usec = 0;
 
 	if (-1 == select(*m_pSocket + 1, &m_ReadFD, &m_WriteFD, &m_ExceptFD, &Timeout))
@@ -217,6 +255,7 @@ bool Socket::ProcessExcept()
 	if (FD_ISSET(*m_pSocket, &m_ExceptFD))
 	{
 		printf("socket exrcept !!!!!!!\n");
+		exit(0);
 		return false;
 	}
 	return true;
@@ -247,7 +286,7 @@ int main()
 	// Create Buff
 	g_buff_manaer = Create_Buff_Manager();
 	// Create and Init Configure
-	ifstream ifs("ip.txt");
+	ifstream ifs("/home/liujiwei/robot/ip.txt");
 	string str;
 	int i = 0;
 	IP_PORT ip_port[MAX_CONNECT_COUNT];
@@ -326,17 +365,6 @@ void *WaitPacket(void * vargp)
 	return NULL;
 }
 
-void *threadrecv(void *vargp)
-{
-	int connfd = *((int *)vargp);
-	SOCKET_MAP::iterator itFind = socket_map.find(connfd);
-	if (itFind != socket_map.end())
-	{
-		itFind->second->Recv();
-	}
-	return NULL;
-}
-
 void *threadzipreader(void *vargp)
 {
 	// init file
@@ -383,10 +411,10 @@ void *threadzipreader(void *vargp)
 	//fclose(fp);
 
 	string strPath = Config::GetInstance()->GetValue("FilePath");
-	char* pszPaht = const_cast<char*>(strPath.c_str());
+	char* pszPath = const_cast<char*>(strPath.c_str());
 	while (true)
 	{
-		List_Dir(pszPaht);
+		List_Dir(pszPath);
 	}
 }
 

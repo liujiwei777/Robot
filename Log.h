@@ -12,7 +12,7 @@ public:
 	Log();
 	~Log();
 public:
-	void Insert(string & strText);
+	void Insert(char* pszText);
 	static Log* GetInstance();
 private:
 	ofstream *m_fout;

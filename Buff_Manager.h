@@ -13,7 +13,7 @@ public:
 	Buff* Get_Buff(int nIndex);
 	void Clean(int nIndex);
 	int  Get_UnUse_Buff();
-	int  Write_Empty_Buff(char *pszBuff, int nLen);
+	int  Write_Empty_Buff(char *pszBuff, int nWriteLen);
 	int  Copy_Send_Buff(Buff* buff);
 	int Get_Send_Index();
 	void Set_Send_Index(int nIndex);

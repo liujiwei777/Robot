@@ -4,7 +4,7 @@ Log* Log::instance = NULL;
 
 Log::Log()
 {
-	char filename[] = "/home/tcpflow/out.txt"; // 此处写入文件名 
+	char filename[] = "/home/liujiwei/robot/out.txt"; // 此处写入文件名 
 	ofstream *fout = new ofstream(filename, ios::app);
 	m_fout = fout;
 }
@@ -15,9 +15,9 @@ Log::~Log()
 	delete m_fout;
 }
 
-void Log::Insert(string & strText)
+void Log::Insert(char* pszText)
 {
-	(*m_fout) << strText << endl;
+	(*m_fout) << pszText << endl;
 }
 
 Log* Log::GetInstance()

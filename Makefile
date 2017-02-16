@@ -1,9 +1,9 @@
 	CC = gcc
 	XX = g++
 	CINCLUDE = -I/home/memory/apr-1.5.2/include/ -L/usr/local/apache2/lib/
-	CXXLIB   = -lz -lpthread
+	CXXLIB   = -lpthread
 	CXXFLAGS = -std=gnu++0x -g -O0
-	CXXSOURCE = Buff.cpp Buff_Manager.cpp Config.cpp Socket.cpp
+	CXXSOURCE = Buff.cpp Buff_Manager.cpp Config.cpp Socket.cpp Log.cpp
 
 
 Robot:$(CXXSOURCE)
