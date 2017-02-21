@@ -1,11 +1,12 @@
 #include "Log.h"
+#include "Config.h"
 
 Log* Log::instance = NULL;
 
 Log::Log()
 {
-	char filename[] = "/home/liujiwei/robot/out.txt"; // 此处写入文件名 
-	ofstream *fout = new ofstream(filename, ios::app);
+	//char filename[] = "/home/liujiwei/robot/out.txt"; // 此处写入文件名 
+	ofstream *fout = new ofstream(Config::GetInstance()->GetValue("LogPath").c_str(), ios::app);
 	m_fout = fout;
 }
 

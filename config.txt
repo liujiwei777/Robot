@@ -1,3 +1,6 @@
-FilePath=/home/liujiwei/sso
-ConnectCount=1
+FilePath=/home/project/robot/tcpdump/sso
+ConnectCount=5
+DelaySendTime=6
+IPPath=/home/project/robot/ip.txt
+LogPath=/home/project/robot/out.txt
 

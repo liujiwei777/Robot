@@ -4,6 +4,8 @@
 #include <iostream>
 using namespace std;
 
+extern string g_strConfigPath;
+
 Config* Config::instance = NULL;
 
 Config::Config()
@@ -123,7 +125,7 @@ Config* Config::GetInstance()
 	if (instance == NULL)
 	{
 		instance = new Config();
-		instance->ReadConfig("/home/liujiwei/robot/config.txt");
+		instance->ReadConfig(g_strConfigPath);
 	}
 
 	return instance;

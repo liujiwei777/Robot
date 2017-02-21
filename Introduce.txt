@@ -1,4 +1,4 @@
-第一步：tcpdump -i ens3 src port 63776 -w /home/ubuntu/tcpdump/sso.pcap
+﻿第一步：tcpdump -i ens3 src port 63776 -w /home/ubuntu/tcpdump/sso.pcap
         tcpdump -i ens3 src port 7784 -w /home/ubuntu/tcpdump/monsters.pcap
 		tcpdump -i ens3 src port 63729 -w /home/ubuntu/tcpdump/pay.pcap
 		tcpdump -i ens3 src port 7799 -w /home/ubuntu/tcpdump/other.pcap

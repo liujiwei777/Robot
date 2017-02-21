@@ -1,10 +1,0 @@
-POST /monsters/ HTTP/1.1
-Accept-Encoding: identity
-User-Agent: ANDROID#C60#ASUS_T00J#stock#3.10.20-262979-gaee3d1b#0#515#1.1.0#en_US
-Authorization: Token Uo8AAAAAAACrLIRYAAAAAAABAgMEBQYHCAkKCwwNDg8=
-Host: monsters.cliapi.microfun.com.:7784
-Connection: Keep-Alive
-Content-Type: application/x-www-form-urlencoded
-Content-Length: 58
-
- adfe4cb266ae110bca6f24e218f9178b‘BLGetSyncFlag“û–Ó˚å≤V
