@@ -99,7 +99,7 @@ void Socket::Connect(char* pszIP, int nPort)
 			{
 				break;
 			}
-			else 
+			else
 			{
 				perror("connect remote server fail.\n");
 				printf("%d\n", errno);
@@ -153,7 +153,7 @@ void Socket::WaitPacket()
 {
 	if (!Select() || !ProcessExcept() || !ProcessInput() || !ProcessOutput())
 	{
-		printf(" Socket::WaitPacketerror !!!! \n");
+		//printf(" Socket::WaitPacketerror !!!! \n");
 	}
 }
 
@@ -378,6 +378,13 @@ int Socket::Send()
 		}
 		delete buff;
 		send_count += 1;
+		if (20000 == send_count)
+		{
+			time_t timep;
+			time(&timep);
+			printf("end time is %s\n", ctime(&timep));
+		}
+		
 		//usleep(10000);
 		cout << "send_count = " << send_count << endl;
 		return nSendCount;
@@ -409,8 +416,9 @@ int Socket::Recv()
 		exit(0);
 		return 0;
 	}
-	Log::GetInstance()->Insert(pszBuff);
+	//Log::GetInstance()->Insert(pszBuff);
 	return 0;
 }
 
 #pragma pack(pop)
+
