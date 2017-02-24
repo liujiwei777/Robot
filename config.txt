@@ -1,0 +1,6 @@
+FilePath=/home/project/robot/tcpdump
+ConnectCount=3
+DelaySendTime=6
+IPPath=/home/project/robot/ip.txt
+LogPath=/home/project/robot/out.txt
+
