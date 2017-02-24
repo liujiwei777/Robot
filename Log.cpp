@@ -1,5 +1,6 @@
 #include "Log.h"
 #include "Config.h"
+
 //Log
 Log* Log::instance = NULL;
 
